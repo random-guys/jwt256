@@ -44,7 +44,6 @@ export const GetUserAuth = async (
     );
 
     const token = await jwt.decode(plain_text);
-    console.log(token.id);
 
     if ((await redisService.get(token.id)) === auth_key) next();
     else throw new Error("Session has expired");

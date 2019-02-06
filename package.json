@@ -6,7 +6,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc -w -p ./tsconfig.json",
-    "test": "jest"
+    "test": "jest --detectOpenHandles --forceExit"
   },
   "author": "Raymond Tukpe <rtukpe@gmail.com>",
   "license": "ISC",
@@ -22,6 +22,8 @@
     "@types/jsonwebtoken": "^8.3.0",
     "@types/node": "^10.12.21",
     "@types/redis": "^2.8.10",
+    "@types/supertest": "^2.0.7",
+    "supertest": "^3.4.2",
     "jest": "^23.6.0",
     "ts-jest": "^23.10.5",
     "typescript": "^3.2.4"

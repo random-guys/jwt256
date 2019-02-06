@@ -9,6 +9,7 @@ export default class RedisService implements IRedisService {
   hdel: (hash: string, field: string) => Promise<any>;
   hget: (hash: string, field: string) => Promise<string>;
   hset: (hash: string, field: string, value: any) => Promise<any>;
+  quit: () => Promise<void>;
   set: (
     key: string,
     value: any,
@@ -24,6 +25,7 @@ export default class RedisService implements IRedisService {
     this.hset = promisify(this.redis.hset).bind(this.redis);
     this.set = promisify(this.redis.set).bind(this.redis);
     this.get = promisify(this.redis.get).bind(this.redis);
+    this.quit = promisify(this.redis.quit).bind(this.redis);
 
     this.redis.on("error", err => {
       console.log("An error occured while initialzing redis client");
@@ -40,4 +42,5 @@ export interface IRedisService {
   hset(hash: string, field: string, value: any): Promise<any>;
   set(key: string, value: any, mode?: string, duration?: number): Promise<any>;
   get(key: string): Promise<string>;
+  quit(): Promise<void>;
 }

@@ -2,7 +2,7 @@
 
 Implementation of JWT using AES-256
 
-![jwt](https://cdn.auth0.com/blog/jwtalgos/logo.png)
+![jwt](http://jwt.io/img/logo-asset.svg)
 
 ## To Use
 
