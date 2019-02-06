@@ -1,5 +1,11 @@
 version: "3"
 services:
+  node:
+    build: .
+    environment:
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      - redis
   redis:
     image: redis:alpine
     ports:
