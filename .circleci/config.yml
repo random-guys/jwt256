@@ -6,8 +6,8 @@ jobs:
       JWT_SECRET: "9876543456789876545678"
       REDIS_URL: "redis://localhost:6379"
     docker:
-      - image: circleci/redis
-      - image: circleci/node:10
+      - image: redis
+      - image: node:10
     steps:
       - checkout
       - restore_cache:
