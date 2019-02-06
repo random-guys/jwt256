@@ -14,7 +14,7 @@ Ensure `JWT_SECRET` and `REDIS_URL` environment variables are set.
 
 ## Usage
 
-```
+```ts
 import { GetUserAuth, SetUserAuth } from "@random-guys/jwt256";
 
 // creates an encrpted JWT token and saves it in Redis using the user's id.
