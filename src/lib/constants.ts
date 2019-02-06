@@ -1,0 +1,1 @@
+export const JWT_CACHE_TTL = 600;
