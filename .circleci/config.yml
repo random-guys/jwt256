@@ -3,12 +3,12 @@ jobs:
   build:
     working_directory: ~/app
     environment:
-      JWT_SECRET: "9876543456789876545678"
-      REDIS_URL: "redis://localhost:6379"
-      REDIS_KEY: "4844e2650b69fd92f0af204275ca74b9"
+      JWT_SECRET: '9876543456789876545678'
+      REDIS_URL: 'redis://localhost:6379'
+      REDIS_KEY: '4844e2650b69fd92f0af204275ca74b9'
     docker:
-      - image: redis
       - image: mhart/alpine-node:10
+      - image: redis
     steps:
       - checkout
       - restore_cache:
