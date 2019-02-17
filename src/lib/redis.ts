@@ -17,8 +17,11 @@ export default class RedisService implements IRedisService {
     duration?: number
   ) => Promise<any>;
 
-  constructor(url: string) {
-    this.redis = redis.createClient({ url });
+  constructor(url: string, password?: string) {
+    this.redis =
+      password !== null
+        ? redis.createClient({ url, password })
+        : redis.createClient({ url });
     this.hdel = promisify(this.redis.hdel).bind(this.redis);
     this.hget = promisify(this.redis.hget).bind(this.redis);
     this.hgetall = promisify(this.redis.hgetall).bind(this.redis);
