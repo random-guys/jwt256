@@ -10,35 +10,37 @@ Implementation of JWT using AES-256
 
 ---
 
-Ensure `JWT_SECRET` and `REDIS_URL` environment variables are set.
+Ensure `JWT_SECRET` and `REDIS_KEY` environment variables are set, and that `REDIS_KEY` is a 32 digit string.
 
 ## Usage
 
 ```ts
 import { GetUserAuth, SetUserAuth } from "@random-guys/jwt256";
+import redisService from "@app/common/services/redis";
 
-// creates an encrpted JWT token and saves it in Redis using the user's id.
+//creates an encrpted JWT token and saves it in Redis using the user's id.
 @httpPost("/signup")
 async signup(@request() req: Request, @response() res: Response, @requestBody(), body: SignupDTO) {
   try {
     let user = create(body);
-    const token = await SetUserAuth(user._id);
+    const token = await SetUserAuth(redisService, user.id);
     this.handleSuccess(req, res, { token, user });
   } catch (err) {
     this.handleError(req, res, err);
   }
 }
 
-// reads the Authorization header and validates the content with that stored in Redis
-@httpPatch("/:phone", GetUserAuth)
-async upadateUser(
+/**
+ * reads the Authorization header and validates the content with that stored in Redis
+ */
+@httpPost("/buy", GetUserAuth(redisService))
+async buyBook(
   @request() req: Request,
   @response() res: Response,
-  @requestParam("phone") phone: string,
-  @requestBody() body: UpdateProfileDTO
+  @requestBody() body: BuyBookDTO
 ) {
   try {
-    const user = await this.userRepo.update({ phone_number: phone }, body);
+    const sale = await this.bookRepo.buyBook({ id: req.user } , body);
     this.handleSuccess(req, res, user);
   } catch (err) {
     console.log(err);
@@ -48,7 +50,4 @@ async upadateUser(
 
 ```
 
-## TODO
-
-- Add tests
-- Write documentation
+The user id is in the `req.user` field.
