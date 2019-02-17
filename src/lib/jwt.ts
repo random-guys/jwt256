@@ -74,6 +74,7 @@ export const SetUserAuth = async (redis: RedisService, user_id: string) => {
   const salt = await genRandomBytes(32);
   const token = await jwt.sign({
     id: user_id,
+    salt: salt.toString('hex'),
   });
 
   // start encrption
