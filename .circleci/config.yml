@@ -67,7 +67,7 @@ jobs:
           command: |
             yarn build
             npm i npm-cli-login
-            npm-cli-login
+            node ./node_modules/npm-cli-login/bin/npm-cli-login.js
             npm publish --access public
 workflows:
   version: 2
