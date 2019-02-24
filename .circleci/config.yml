@@ -2,12 +2,37 @@ version: 2.1
 jobs:
   build:
     working_directory: ~/app
-    environment:
-      JWT_SECRET: '9876543456789876545678'
-      REDIS_URL: 'redis://localhost:6379'
-      REDIS_KEY: '4844e2650b69fd92f0af204275ca74b9'
     docker:
-      - image: mhart/alpine-node:10
+      - image: circleci/node:10
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - dependency-cache-{{checksum "package.json"}}
+            - dependency-cache-
+      - run:
+          name: Install dependencies
+          command: yarn
+      - save_cache:
+          key: dependency-cache-{{checksum "package.json"}}
+          paths:
+            - node_modules
+      - run:
+          name: Build typescript
+          command: yarn build
+      - persist_to_workspace:
+          root: .
+          paths:
+            - node_modules
+            - dist
+  test:
+    working_directory: ~/app
+    environment:
+      JWT_SECRET: "9876543456789876545678"
+      REDIS_URL: "redis://localhost:6379"
+      ENCRYPTION_KEY: "4844e2650b69fd92f0af204275ca74b9"
+    docker:
+      - image: circleci/node:10
       - image: redis
     steps:
       - checkout
@@ -25,3 +50,35 @@ jobs:
       - run:
           name: Run tests
           command: yarn test
+  deploy:
+    working_directory: ~/app
+    environment:
+      NPM_USER: $CIRCLE_NPM_USER
+      NPM_PASS: $CIRCLE_NPM_PASS
+      NPM_EMAIL: $CIRCLE_NPM_EMAIL
+    docker:
+      - image: circleci/node:10
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+    run:
+      name: Deploy to NPM Registry
+      command: |
+        yarn build
+        npm i -g npm-cli-login
+        npm-cli-login
+        npm publish --access public
+workflows:
+  version: 2
+  build-test-and-deploy:
+    jobs:
+      - build
+      - test:
+          context: global
+          requires:
+            - build
+      - deploy:
+          context: global
+          requires:
+            - test
