@@ -5,7 +5,8 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc -w -p ./tsconfig.json",
+    "build": "tsc -p ./tsconfig.json",
+    "watch": "tsc -w -p ./tsconfig.json",
     "test": "jest --detectOpenHandles --forceExit"
   },
   "author": "Raymond Tukpe <rtukpe@gmail.com>",
