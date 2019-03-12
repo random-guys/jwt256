@@ -1,13 +1,5 @@
 version: "3"
 services:
-  node:
-    build: .
-    environment:
-      REDIS_URL: "redis://redis:6379"
-      JWT_SECRET: "9876543456789876545678"
-      REDIS_KEY: "4844e2650b69fd92f0af204275ca74b9"
-    depends_on:
-      - redis
   redis:
     image: redis
     ports:

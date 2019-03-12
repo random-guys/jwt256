@@ -47,7 +47,7 @@ const GetAuth = (redis: RedisService) => {
         req.user = token.id;
 
         // refresh access token
-        await SetAuth(redis, token.id);
+        await redis.set(token.id, auth_key, "EX", JWT_CACHE_TTL);
 
         next();
       } else throw new Error("Session has expired");
