@@ -1,10 +1,10 @@
-import crypto from 'crypto';
-import { NextFunction, Request, Response } from 'express';
-import { promisify } from 'util';
-import { JWT_CACHE_TTL } from './constants';
-import httpStatus from 'http-status-codes';
-import RedisService from './redis';
-import { AES256, JWT } from './utils';
+import crypto from "crypto";
+import { NextFunction, Request, Response } from "express";
+import { promisify } from "util";
+import { JWT_CACHE_TTL } from "./constants";
+import httpStatus from "http-status-codes";
+import RedisService from "./redis";
+import { AES256, JWT } from "./utils";
 
 /**
  * Reads the Auth header and AES decrypts the Bearer token to
@@ -22,32 +22,32 @@ export const GetUserAuth = (redis: RedisService) => {
       const { JWT_SECRET, ENCRYPTION_KEY } = process.env;
 
       if (!JWT_SECRET) {
-        throw new Error('please add JWT_SECRET to the environment variables');
+        throw new Error("please add JWT_SECRET to the environment variables");
       }
 
       if (!ENCRYPTION_KEY) {
         throw new Error(
-          'please add ENCRYPTION_KEY to the environment variables'
+          "please add ENCRYPTION_KEY to the environment variables"
         );
       }
 
       const jwt: JWT = new JWT(JWT_SECRET);
 
       const auth = req.headers.authorization;
-      if (!auth) throw new Error('Session has expired');
-      const auth_key = auth.split(' ')[1];
+      if (!auth) throw new Error("Session has expired");
+      const auth_key = auth.split(" ")[1];
 
       // split the keys using the separator
-      const keys = auth_key.split('.');
+      const keys = auth_key.split(".");
       const cipher = keys[0];
       const tag = keys[2];
       const iv = keys[1];
 
-      const aes = new AES256(Buffer.from(ENCRYPTION_KEY, 'utf8'));
+      const aes = new AES256(Buffer.from(ENCRYPTION_KEY, "utf8"));
       const plain_text = aes.decrypt(
         cipher,
-        Buffer.from(iv, 'hex'),
-        Buffer.from(tag, 'hex')
+        Buffer.from(iv, "hex"),
+        Buffer.from(tag, "hex")
       );
 
       const token = await jwt.decode(plain_text);
@@ -55,18 +55,19 @@ export const GetUserAuth = (redis: RedisService) => {
       if (user === auth_key) {
         // Auth was successful
         req.user = token.id;
+        req.data = token.data;
 
         // refresh access token
-        await redis.set(token.id, auth_key, 'EX', JWT_CACHE_TTL);
+        await redis.set(token.id, auth_key, "EX", JWT_CACHE_TTL);
 
         next();
-      } else throw new Error('Session has expired');
+      } else throw new Error("Session has expired");
     } catch (err) {
       return res.status(httpStatus.UNAUTHORIZED).json({
-        status: 'error',
+        status: "error",
         data: null,
         message: err.message,
-        code: httpStatus.UNAUTHORIZED
+        code: httpStatus.UNAUTHORIZED,
       });
     }
   };
@@ -81,17 +82,22 @@ export const GetUserAuth = (redis: RedisService) => {
  *
  * @param { RedisService } redis Redis Service instance
  * @param { string } user_id The user's ID
+ * @param { object } data Additional data that can be passed to JWT
  * @returns AES encypted cipher text
  */
-export const SetUserAuth = async (redis: RedisService, user_id: string) => {
+export const SetUserAuth = async (
+  redis: RedisService,
+  user_id: string,
+  data?: any
+) => {
   const { JWT_SECRET, ENCRYPTION_KEY } = process.env;
 
   if (!JWT_SECRET) {
-    throw new Error('please add JWT_SECRET to the environment variables');
+    throw new Error("please add JWT_SECRET to the environment variables");
   }
 
   if (!ENCRYPTION_KEY) {
-    throw new Error('please add ENCRYPTION_KEY to the environment variables');
+    throw new Error("please add ENCRYPTION_KEY to the environment variables");
   }
 
   const jwt: JWT = new JWT(JWT_SECRET);
@@ -100,22 +106,23 @@ export const SetUserAuth = async (redis: RedisService, user_id: string) => {
   const salt = await genRandomBytes(32);
   const token = await jwt.sign({
     id: user_id,
-    salt: salt.toString('hex')
+    data,
+    salt: salt.toString("hex"),
   });
 
   // start encrption
-  const aes = new AES256(Buffer.from(ENCRYPTION_KEY, 'utf8'));
+  const aes = new AES256(Buffer.from(ENCRYPTION_KEY, "utf8"));
 
   //encrypt token
   const cipher = aes.encrypt(token);
-  const iv = cipher.iv.toString('hex');
-  const tag = cipher.tag.toString('hex');
+  const iv = cipher.iv.toString("hex");
+  const tag = cipher.tag.toString("hex");
 
   //combine the JWT token and the salt
   const auth_key = `${cipher.enc}.${iv}.${tag}`;
 
   //cache token in redis
-  await redis.set(user_id, auth_key, 'EX', JWT_CACHE_TTL);
+  await redis.set(user_id, auth_key, "EX", JWT_CACHE_TTL);
   return auth_key;
 };
 
@@ -132,31 +139,31 @@ export const GetUserToken = (req: Request): Promise<string> => {
       const { JWT_SECRET, ENCRYPTION_KEY } = process.env;
 
       if (!JWT_SECRET) {
-        throw new Error('please add JWT_SECRET to the environment variables');
+        throw new Error("please add JWT_SECRET to the environment variables");
       }
 
       if (!ENCRYPTION_KEY) {
         throw new Error(
-          'please add ENCRYPTION_KEY to the environment variables'
+          "please add ENCRYPTION_KEY to the environment variables"
         );
       }
 
       const jwt: JWT = new JWT(JWT_SECRET);
 
       const auth = req.headers.authorization;
-      if (!auth) return reject('Missing Auth Header');
+      if (!auth) return reject("Missing Auth Header");
 
-      const auth_key = auth.split(' ')[1];
-      const keys = auth_key.split('.');
+      const auth_key = auth.split(" ")[1];
+      const keys = auth_key.split(".");
       const cipher = keys[0];
       const tag = keys[2];
       const iv = keys[1];
 
-      const aes = new AES256(Buffer.from(ENCRYPTION_KEY, 'utf8'));
+      const aes = new AES256(Buffer.from(ENCRYPTION_KEY, "utf8"));
       const plain_text = aes.decrypt(
         cipher,
-        Buffer.from(iv, 'hex'),
-        Buffer.from(tag, 'hex')
+        Buffer.from(iv, "hex"),
+        Buffer.from(tag, "hex")
       );
 
       const token = await jwt.decode(plain_text);

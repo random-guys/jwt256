@@ -1,6 +1,7 @@
 declare module Express {
   export interface Request {
-    user: any;
+    data: any;
     id: string;
+    user: string;
   }
 }
